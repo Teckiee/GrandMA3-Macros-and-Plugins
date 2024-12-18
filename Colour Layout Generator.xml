@@ -1,6 +1,6 @@
 function main()
     --        USER SETTINGS
-    local maxButtonsPerRow = 28  -- Buttons per row
+    local maxButtonsPerRow = 28  -- Buttons per row and how many colour presets you have.
 	local groupcount = 11   -- Total groups to process
     local layoutNumber = 7  -- Layout number
 
