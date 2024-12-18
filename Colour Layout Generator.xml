@@ -1,0 +1,73 @@
+function main()
+    --        USER SETTINGS
+    local maxButtonsPerRow = 28  -- Buttons per row
+	local groupcount = 11   -- Total groups to process
+    local layoutNumber = 7  -- Layout number
+
+
+  
+    local sequenceStart = 200  -- Starting sequence number
+    local origX = -900
+    local xOffset = origX  -- Initial X position
+    local yOffset = 400  -- Initial Y position
+    local buttonWidth = 50
+    local buttonHeight = 50
+    local xSpacing = buttonWidth
+    local ySpacing = buttonHeight
+    local userVar = UserVars()
+
+
+    local layoutItemIndex = 1  -- Layout starts at item 1
+
+    -- Loop through potential groups
+    for groupNumber = 1, groupcount do
+    
+        Cmd('SetUservar "GroupName" At Group ' .. groupNumber .. ' Property "Name"')
+        local groupName = GetVar(userVar, "GroupName")
+
+        -- Generate sequences for each preset
+        for presetIndex = 1, maxButtonsPerRow do
+            local sequenceNumber = sequenceStart + (groupNumber - 1) * maxButtonsPerRow + (presetIndex - 1)
+            Cmd('SetUservar "PresetName" At Preset 4.' .. presetIndex .. ' Property "Name"')
+            local presetName = GetVar(userVar, "PresetName")
+            local sequenceName = groupName .. " " .. presetName
+
+            -- Apply presets and store sequence
+            Cmd("Group " .. groupNumber)
+            --Cmd("At Preset 1.1")
+            Cmd("At Preset 4." .. presetIndex)
+            Cmd("Store Sequence " .. sequenceNumber)
+            Cmd("Label Sequence " .. sequenceNumber .. " \"" .. sequenceName .. "\"")
+
+
+
+
+            -- Assign sequence to layout
+            Cmd("Assign Sequence " .. sequenceNumber .. " At Layout " .. layoutNumber .. " " .. layoutItemIndex)
+            Cmd("Set Layout " .. layoutNumber .. "." .. layoutItemIndex .. " Property \"PosX\" " .. xOffset)
+            Cmd("Set Layout " .. layoutNumber .. "." .. layoutItemIndex .. " Property \"PosY\" " .. yOffset)
+
+           -- Attempt to set appearance and handle errors
+            local success, err = pcall(function()
+                Cmd("Set Layout " .. layoutNumber .. "." .. layoutItemIndex .. " Property \"Appearance\" \"" .. presetName .. "\"")
+            end)
+            if not success then
+                Printf("Appearance \"" .. presetName .. "\" does not exist.")
+            end
+
+            -- Adjust positions
+            xOffset = xOffset + xSpacing
+            if layoutItemIndex % maxButtonsPerRow == 0 then
+                xOffset = origX
+                yOffset = yOffset - ySpacing
+            end
+
+            -- Increment layout item index
+            layoutItemIndex = layoutItemIndex + 1
+        end
+    end
+
+    Printf("Sequences generated for all existing groups.")
+end
+
+return main
